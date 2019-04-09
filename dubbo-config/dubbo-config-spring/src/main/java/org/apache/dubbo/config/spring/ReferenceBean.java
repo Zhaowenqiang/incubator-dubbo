@@ -67,7 +67,9 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
     }
 
     @Override
+    //dubbo消费者初始化入口，通过spring的FactoryBean接口的回调，会进入这里，然后在这里初始化这个dubbo容器
     public Object getObject() {
+        //这个是dubbo消费者初始化入口，通过这个地方，将spring和dubbo进行了结合，这个地方离开了spring和dubbo的集成jar进入dubbo的配置层ReferenceConfig
         return get();
     }
 

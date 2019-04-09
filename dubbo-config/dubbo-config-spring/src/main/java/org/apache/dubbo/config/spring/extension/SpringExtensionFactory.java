@@ -41,14 +41,21 @@ public class SpringExtensionFactory implements ExtensionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
     private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
+    //一个dubbo容器只会有一个，退出销毁处理
     private static final ApplicationListener shutdownHookListener = new ShutdownHookListener();
 
+    //这个方法每一个服务和客户端都会进入一次，里面有防重处理hashset
     public static void addApplicationContext(ApplicationContext context) {
         contexts.add(context);
+        //todo 为什么在这里特殊处理，ConfigurableApplicationContext是ApplicationContext直接子类，所有的context都会首先继承这个类，并且这个接口有注册关闭接口
         if (context instanceof ConfigurableApplicationContext) {
+            //在这里执行退出注册，但是没有将自己的监听事件加入，之间是怎么关联的呢
+            //在这里是给spring的容器添加了一个退出钩子，并且将自己可能已经注册到的退出钩子删除，将自己的退出钩子嫁接到spring容器的退出事件中去
             ((ConfigurableApplicationContext) context).registerShutdownHook();
+            //将自己的注册的退出钩子从jvm中去掉，一个dubbo容器只能添加一个退出钩子，退出监听器是一个单例的对象，
             DubboShutdownHook.getDubboShutdownHook().unregister();
         }
+        //将自己的退出监听器加入到spring的容器中去
         BeanFactoryUtils.addApplicationListener(context, shutdownHookListener);
     }
 
@@ -106,6 +113,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
         return null;
     }
 
+    //spring的监听器扩展，添加dubbo销毁监听器，在spring的扩展者通过监听application的事件判断要处理的内容
     private static class ShutdownHookListener implements ApplicationListener {
         @Override
         public void onApplicationEvent(ApplicationEvent event) {

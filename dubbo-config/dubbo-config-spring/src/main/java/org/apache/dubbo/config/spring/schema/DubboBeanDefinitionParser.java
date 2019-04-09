@@ -70,6 +70,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     }
 
     @SuppressWarnings("unchecked")
+    //todo spring中dubbo配置文件的解析过程，需要仔细梳理其中的逻辑，了解dubbo的配置详情
+    // 在这个地方dubbo将自己定义的xml配置解析为spring需要的BeanDefinition，然后交给了spring的容器，在spring调用时在进行处理
+    //在这里dubbo只是将xml中的数据解析转化为spring所需要的对象，而没有对相应对象进行实例化
+    // 在这里没有看到对于注册中心有什么特殊处理，那么dubbo的注册中心是在哪个地方进行初始化的
     private static BeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean required) {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(beanClass);

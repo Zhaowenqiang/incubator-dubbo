@@ -197,7 +197,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (StringUtils.isEmpty(interfaceName)) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
+        //将所有的配置信息混合在消费者的配置bean中
         completeCompoundConfigs();
+        //启动配置中心
         startConfigCenter();
         // get consumer's global configuration
         checkDefault();
@@ -228,6 +230,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParametersComponents.forEach(component -> component.appendReferParameters(this));
     }
 
+    //初始化同步锁，由于spring的调用过程中获取bean，可能出现同时请求
+    //这个地方正式进入dubbo的初始化过程
     public synchronized T get() {
         checkAndUpdateSubConfigs();
 
